@@ -76,8 +76,9 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
     if (selectedFont) {
       try {
         await loadFontOption(selectedFont);
-      } catch {
-        alert(`字体加载失败：${selectedFont.label}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '浏览器无法解析该字体文件';
+        alert(`字体加载失败：${selectedFont.label}\n${message}`);
         return;
       }
     }

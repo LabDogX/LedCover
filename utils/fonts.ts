@@ -112,11 +112,32 @@ const getPrimaryFontFamily = (cssFamily: string): string => {
 
 const loadedFontIds = new Set<string>();
 
+const resolveFontSource = (source: string): string => {
+  if (/^(https?:|data:|blob:)/i.test(source)) {
+    return source;
+  }
+
+  const meta = import.meta as ImportMeta & { env?: { BASE_URL?: string } };
+  const base = meta.env?.BASE_URL || '/';
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+  const normalizedSource = source.replace(/^\/+/, '');
+
+  return new URL(normalizedSource, `${window.location.origin}${normalizedBase}`).toString();
+};
+
 export async function loadFontOption(font: FontOption): Promise<void> {
   if (typeof document === 'undefined' || !font.source || loadedFontIds.has(font.id)) return;
 
   const family = getPrimaryFontFamily(font.cssFamily);
-  const face = new FontFace(family, `url("${font.source}")`);
+  const fontUrl = resolveFontSource(font.source);
+  const response = await fetch(fontUrl, { cache: 'force-cache' });
+
+  if (!response.ok) {
+    throw new Error(`字体文件请求失败：HTTP ${response.status}`);
+  }
+
+  const fontData = await response.arrayBuffer();
+  const face = new FontFace(family, fontData);
   await face.load();
   document.fonts.add(face);
   loadedFontIds.add(font.id);
