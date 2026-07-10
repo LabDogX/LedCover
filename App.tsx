@@ -11,7 +11,6 @@ import SettingsModal from './components/SettingsModal';
 import Logo from './components/Logo';
 import { Github, Settings as SettingsIcon, ChevronLeft, Sparkles } from 'lucide-react';
 import { applyProviderDefaults, getProviderDisplayName, getProviderOption } from './utils/aiProviders';
-import { loadProjectFonts } from './utils/fonts';
 
 const DEFAULT_SETTINGS: AppSettings = applyProviderDefaults({
   provider: AIProvider.DeepSeek,
@@ -76,10 +75,6 @@ const App: React.FC = () => {
 
   // Load settings from local storage on mount
   useEffect(() => {
-    loadProjectFonts().catch((error) => {
-      console.warn('Failed to load bundled fonts', error);
-    });
-
     const savedSettings = localStorage.getItem('led_cover_settings') || localStorage.getItem('gudong_cover_settings');
     if (savedSettings) {
       try {

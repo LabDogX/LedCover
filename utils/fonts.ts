@@ -33,15 +33,70 @@ export const SYSTEM_FONT_OPTIONS: FontOption[] = [
   },
 ];
 
-// Add bundled commercial-use fonts here after placing files under public/fonts/.
-// Example:
-// {
-//   id: 'source-han-sans',
-//   label: '思源黑体',
-//   cssFamily: '"Source Han Sans SC", "Noto Sans CJK SC", sans-serif',
-//   source: '/fonts/SourceHanSansSC-Regular.woff2',
-// }
-export const PROJECT_FONT_OPTIONS: FontOption[] = [];
+// Keep this list intentionally small. Files in public/fonts are copied into
+// production builds, so bundled fonts should be curated for cover design use.
+export const PROJECT_FONT_OPTIONS: FontOption[] = [
+  {
+    id: 'source-han-sans-cn-bold',
+    label: '思源黑体 Bold',
+    cssFamily: '"Source Han Sans CN Bold", "Noto Sans CJK SC", sans-serif',
+    source: '/fonts/bundled/source-han-sans-cn-bold.otf',
+  },
+  {
+    id: 'source-han-serif-cn',
+    label: '思源宋体',
+    cssFamily: '"Source Han Serif CN", "Noto Serif CJK SC", serif',
+    source: '/fonts/bundled/source-han-serif-cn-regular.otf',
+  },
+  {
+    id: 'youshe-titlehei',
+    label: '优设标题黑',
+    cssFamily: '"YouShe TitleHei", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/youshe-titlehei.ttf',
+  },
+  {
+    id: 'pangmen-title',
+    label: '庞门正道标题体',
+    cssFamily: '"PangMen Title", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/pangmen-title.ttf',
+  },
+  {
+    id: 'ruizi-zhenyan',
+    label: '锐字真言体',
+    cssFamily: '"RuiZi ZhenYan", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/ruizi-zhenyan.ttf',
+  },
+  {
+    id: 'pangmen-qingsong',
+    label: '庞门正道轻松体',
+    cssFamily: '"PangMen QingSong", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/pangmen-qingsong.otf',
+  },
+  {
+    id: 'azhu-paopao',
+    label: '阿朱泡泡体',
+    cssFamily: '"Azhu Paopao", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/azhu-paopao.ttf',
+  },
+  {
+    id: 'kangkang',
+    label: '素材集市康康体',
+    cssFamily: '"Kangkang", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/kangkang.ttf',
+  },
+  {
+    id: 'muyao-softbrush',
+    label: '沐瑶软笔手写体',
+    cssFamily: '"Muyao Softbrush", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/muyao-softbrush.ttf',
+  },
+  {
+    id: 'ipix-chinese-pixel',
+    label: 'IPix 中文像素',
+    cssFamily: '"IPix Chinese Pixel", "PingFang SC", sans-serif',
+    source: '/fonts/bundled/ipix-chinese-pixel.ttf',
+  },
+];
 
 export const FONT_OPTIONS: FontOption[] = [
   ...SYSTEM_FONT_OPTIONS,
@@ -55,18 +110,14 @@ const getPrimaryFontFamily = (cssFamily: string): string => {
   return cssFamily.split(',')[0].trim().replace(/^['"]|['"]$/g, '');
 };
 
-export async function loadProjectFonts(): Promise<void> {
-  if (typeof document === 'undefined') return;
+const loadedFontIds = new Set<string>();
 
-  const fontsWithSources = PROJECT_FONT_OPTIONS.filter((font) => font.source);
-  if (fontsWithSources.length === 0) return;
+export async function loadFontOption(font: FontOption): Promise<void> {
+  if (typeof document === 'undefined' || !font.source || loadedFontIds.has(font.id)) return;
 
-  await Promise.all(
-    fontsWithSources.map(async (font) => {
-      const family = getPrimaryFontFamily(font.cssFamily);
-      const face = new FontFace(family, `url("${font.source}")`);
-      await face.load();
-      document.fonts.add(face);
-    })
-  );
+  const family = getPrimaryFontFamily(font.cssFamily);
+  const face = new FontFace(family, `url("${font.source}")`);
+  await face.load();
+  document.fonts.add(face);
+  loadedFontIds.add(font.id);
 }

@@ -17,6 +17,12 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Bundled fonts
+public/fonts/*
+!public/fonts/README.md
+!public/fonts/bundled/
+!public/fonts/bundled/*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

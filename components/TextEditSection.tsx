@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Type, AlignLeft, AlignCenter, AlignRight, Upload } from 'lucide-react';
 import { EditableElement } from '../types';
 import { EMOJI_PRESETS } from '../utils/presets';
-import { FONT_OPTIONS, FontOption } from '../utils/fonts';
+import { FONT_OPTIONS, FontOption, loadFontOption } from '../utils/fonts';
 
 interface TextEditSectionProps {
   elements: EditableElement[];
@@ -70,7 +70,18 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
     }
   };
 
-  const handleFontChange = (element: EditableElement, fontFamily: string) => {
+  const handleFontChange = async (element: EditableElement, fontFamily: string) => {
+    const selectedFont = fontOptions.find((font) => font.cssFamily === fontFamily);
+
+    if (selectedFont) {
+      try {
+        await loadFontOption(selectedFont);
+      } catch {
+        alert(`字体加载失败：${selectedFont.label}`);
+        return;
+      }
+    }
+
     onChange(element.id, element.text, element.color, element.align, fontFamily);
   };
 
