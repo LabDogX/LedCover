@@ -198,7 +198,7 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
 
             {element.type === 'decoration' ? (
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
-                {element.text} 可在预览画布中拖动，或用右侧眼睛按钮隐藏。
+                {element.text} 可用右侧眼睛按钮隐藏或显示。
               </div>
             ) : (
               <>

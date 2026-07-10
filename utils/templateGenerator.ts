@@ -68,8 +68,8 @@ function generateWechatTemplate(): string {
   <!-- 内容层 -->
   <div style="position:relative;z-index:10;display:flex;flex-direction:column;gap:24px;width:100%;">
     <!-- 标签 -->
-    <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:#6366f1;width:fit-content;">
-      <span data-editable-id="tag-0" style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ffffff;text-align:center;">标签</span>
+    <div data-editable-id="tag-0" data-editable-type="tag" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:#6366f1;width:fit-content;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ffffff;text-align:center;">
+      标签
     </div>
 
     <!-- 主标题 -->

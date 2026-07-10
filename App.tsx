@@ -178,21 +178,6 @@ const App: React.FC = () => {
     );
   };
 
-  const handleElementPositionChange = (elementId: string, position: { x: number; y: number }) => {
-    if (!currentHtml) return;
-    const newHtml = modifyHtml(currentHtml, {
-      element: [{ elementId, position }],
-    });
-    setCurrentHtml(newHtml);
-    setEditableElements(prev =>
-      prev.map(el =>
-        el.id === elementId
-          ? { ...el, position }
-          : el
-      )
-    );
-  };
-
   // 重置到初始模板
   const handleReset = () => {
     const initialTemplate = generateInitialTemplate(platform, selectedTemplateId);
@@ -328,9 +313,6 @@ const App: React.FC = () => {
               html={currentHtml}
               platform={platform}
               isLoading={isLoading}
-              editableElements={editableElements}
-              onElementPositionChange={handleElementPositionChange}
-              onElementVisibilityChange={handleElementVisibilityChange}
             />
           </div>
 
@@ -373,9 +355,6 @@ const App: React.FC = () => {
                   html={currentHtml}
                   platform={platform}
                   isLoading={isLoading}
-                  editableElements={editableElements}
-                  onElementPositionChange={handleElementPositionChange}
-                  onElementVisibilityChange={handleElementVisibilityChange}
                   compact
               />
               <EditPanel

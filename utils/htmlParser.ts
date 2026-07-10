@@ -96,13 +96,36 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     }
   });
 
-  // 查找标签（span 包含在某些容器中）
+  // 优先识别完整标签容器，隐藏时要连同其背景与装饰一起隐藏。
+  const explicitTags = rootElement.querySelectorAll('[data-editable-type="tag"]');
+  explicitTags.forEach((tag) => {
+    const element = tag as HTMLElement;
+    const text = element.textContent?.trim() || '标签';
+    const commonState = getCommonElementState(element);
+
+    editableElements.push({
+      id: element.getAttribute('data-editable-id') || `tag-${tagIndex}`,
+      type: 'tag',
+      text,
+      placeholder: '编辑标签',
+      ...commonState,
+    });
+    tagIndex++;
+  });
+
+  // 兼容 AI 生成内容中的独立 span 标签。
   const tags = rootElement.querySelectorAll('span');
   const seenTagTexts = new Set<string>(); // 用于避免重复
   tags.forEach((span) => {
     const text = span.textContent?.trim();
     // 标签通常是短文本，大写字母或关键词
-    if (text && text.length < 30 && text.length > 1 && text === text.toUpperCase()) {
+    if (
+      text &&
+      text.length < 30 &&
+      text.length > 1 &&
+      text === text.toUpperCase() &&
+      !span.closest('[data-editable-type="tag"]')
+    ) {
       // 避免重复（与 markEditableElements 中的遍历顺序一致）
       if (!seenTagTexts.has(text)) {
         const element = span as HTMLElement;
@@ -258,11 +281,26 @@ export function markEditableElements(html: string): string {
     }
   });
 
-  // 标记标签（span 包含在某些容器中）
+  const explicitTags = rootElement.querySelectorAll('[data-editable-type="tag"]');
+  explicitTags.forEach((tag) => {
+    const element = tag as HTMLElement;
+    if (!element.getAttribute('data-editable-id')) {
+      element.setAttribute('data-editable-id', `tag-${tagIndex}`);
+    }
+    tagIndex++;
+  });
+
+  // 标记 AI 生成内容中的独立 span 标签。
   const tags = rootElement.querySelectorAll('span');
   tags.forEach((span) => {
     const text = span.textContent?.trim();
-    if (text && text.length < 30 && text.length > 1 && text === text.toUpperCase()) {
+    if (
+      text &&
+      text.length < 30 &&
+      text.length > 1 &&
+      text === text.toUpperCase() &&
+      !span.closest('[data-editable-type="tag"]')
+    ) {
       (span as HTMLElement).setAttribute('data-editable-id', `tag-${tagIndex}`);
       tagIndex++;
     }
