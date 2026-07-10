@@ -1,4 +1,5 @@
 import React from 'react';
+import { LOGO_DATA_URL } from '../utils/brandAssets';
 
 interface LogoProps {
   className?: string;
@@ -9,7 +10,7 @@ const Logo: React.FC<LogoProps> = ({ className = "w-8 h-8", withText = false }) 
   return (
     <div className="flex items-center gap-2">
       <img
-        src="/branding/logo.png"
+        src={LOGO_DATA_URL}
         alt="LedCover"
         className={`rounded-xl object-cover shadow-sm ${className}`}
         draggable={false}
