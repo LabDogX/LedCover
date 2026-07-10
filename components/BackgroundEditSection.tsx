@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Palette, Upload } from 'lucide-react';
 import { BackgroundEdit } from '../types';
-import { XHS_COLOR_PRESETS } from '../utils/presets';
 
 interface BackgroundEditSectionProps {
   background: BackgroundEdit | null;
@@ -13,11 +12,23 @@ type BgType = 'solid' | 'gradient' | 'image';
 // 预设渐变选项
 const GRADIENT_PRESETS = [
   { name: '紫色渐变', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-  { name: '粉色渐变', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
-  { name: '蓝色渐变', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
-  { name: '绿色渐变', value: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
-  { name: '橙色渐变', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
-  { name: '深蓝渐变', value: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' },
+  { name: '蓝粉渐变', value: 'linear-gradient(135deg, #dbeafe 0%, #fbcfe8 100%)' },
+  { name: '粉橙日落', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+  { name: '柠檬暖黄', value: 'linear-gradient(135deg, #fef08a 0%, #fed7aa 100%)' },
+  { name: '蜜桃奶油', value: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+  { name: '樱花柔粉', value: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 45%, #ddd6fe 100%)' },
+  { name: '海盐蓝绿', value: 'linear-gradient(135deg, #ccfbf1 0%, #bfdbfe 100%)' },
+  { name: '湖蓝清透', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { name: '薄荷撞色', value: 'linear-gradient(135deg, #d9f99d 0%, #5eead4 100%)' },
+  { name: '青苹果', value: 'linear-gradient(135deg, #a7f3d0 0%, #fef08a 100%)' },
+  { name: '浅紫雾面', value: 'linear-gradient(135deg, #ede9fe 0%, #f5d0fe 100%)' },
+  { name: '香芋奶盖', value: 'linear-gradient(135deg, #e9d5ff 0%, #fbcfe8 55%, #fef3c7 100%)' },
+  { name: '克莱因蓝', value: 'linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%)' },
+  { name: '赛博霓虹', value: 'linear-gradient(135deg, #0f172a 0%, #7c3aed 48%, #06b6d4 100%)' },
+  { name: '暗底高反差', value: 'linear-gradient(135deg, #020617 0%, #334155 100%)' },
+  { name: '黑金质感', value: 'linear-gradient(135deg, #111827 0%, #92400e 55%, #facc15 100%)' },
+  { name: '红白醒目', value: 'linear-gradient(135deg, #ffffff 0%, #fee2e2 46%, #ef4444 100%)' },
+  { name: '公众号冷灰', value: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' },
 ];
 
 const BackgroundEditSection: React.FC<BackgroundEditSectionProps> = ({
@@ -119,20 +130,6 @@ const BackgroundEditSection: React.FC<BackgroundEditSectionProps> = ({
         </button>
       </div>
 
-      {/* 配色预设 */}
-      <div className="grid grid-cols-4 gap-2">
-        {XHS_COLOR_PRESETS.map((preset) => (
-          <button
-            key={preset.id}
-            onClick={() => onChange(preset.background)}
-            className="h-10 rounded-lg border border-slate-200 shadow-sm hover:ring-2 hover:ring-indigo-400 transition-all"
-            style={{ background: preset.background.value }}
-            title={preset.name}
-            aria-label={preset.name}
-          />
-        ))}
-      </div>
-
       {/* 纯色编辑器 */}
       {activeTab === 'solid' && (
         <div className="flex flex-col gap-3">
@@ -157,6 +154,13 @@ const BackgroundEditSection: React.FC<BackgroundEditSectionProps> = ({
       {/* 渐变编辑器 */}
       {activeTab === 'gradient' && (
         <div className="flex flex-col gap-3">
+          <div
+            className="h-12 rounded-lg border border-slate-200 shadow-inner"
+            style={{
+              background: background?.type === 'gradient' ? background.value : GRADIENT_PRESETS[0].value,
+            }}
+            aria-hidden="true"
+          />
           <select
             value={background?.type === 'gradient' ? background.value : ''}
             onChange={(e) => onChange({ type: 'gradient', value: e.target.value })}

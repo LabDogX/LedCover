@@ -74,9 +74,3 @@ export interface CoverTemplate {
   name: string;
   description: string;
 }
-
-export interface ColorPreset {
-  id: string;
-  name: string;
-  background: BackgroundEdit;
-}
