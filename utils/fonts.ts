@@ -40,61 +40,61 @@ export const PROJECT_FONT_OPTIONS: FontOption[] = [
     id: 'source-han-sans-cn-bold',
     label: '思源黑体 Bold',
     cssFamily: '"Source Han Sans CN Bold", "Noto Sans CJK SC", sans-serif',
-    source: '/fonts/bundled/source-han-sans-cn-bold.otf',
+    source: '/assets/fonts/source-han-sans-cn-bold.otf',
   },
   {
     id: 'source-han-serif-cn',
     label: '思源宋体',
     cssFamily: '"Source Han Serif CN", "Noto Serif CJK SC", serif',
-    source: '/fonts/bundled/source-han-serif-cn-regular.otf',
+    source: '/assets/fonts/source-han-serif-cn-regular.otf',
   },
   {
     id: 'youshe-titlehei',
     label: '优设标题黑',
     cssFamily: '"YouShe TitleHei", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/youshe-titlehei.ttf',
+    source: '/assets/fonts/youshe-titlehei.ttf',
   },
   {
     id: 'pangmen-title',
     label: '庞门正道标题体',
     cssFamily: '"PangMen Title", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/pangmen-title.ttf',
+    source: '/assets/fonts/pangmen-title.ttf',
   },
   {
     id: 'ruizi-zhenyan',
     label: '锐字真言体',
     cssFamily: '"RuiZi ZhenYan", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/ruizi-zhenyan.ttf',
+    source: '/assets/fonts/ruizi-zhenyan.ttf',
   },
   {
     id: 'pangmen-qingsong',
     label: '庞门正道轻松体',
     cssFamily: '"PangMen QingSong", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/pangmen-qingsong.otf',
+    source: '/assets/fonts/pangmen-qingsong.otf',
   },
   {
     id: 'azhu-paopao',
     label: '阿朱泡泡体',
     cssFamily: '"Azhu Paopao", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/azhu-paopao.ttf',
+    source: '/assets/fonts/azhu-paopao.ttf',
   },
   {
     id: 'kangkang',
     label: '素材集市康康体',
     cssFamily: '"Kangkang", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/kangkang.ttf',
+    source: '/assets/fonts/kangkang.ttf',
   },
   {
     id: 'muyao-softbrush',
     label: '沐瑶软笔手写体',
     cssFamily: '"Muyao Softbrush", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/muyao-softbrush.ttf',
+    source: '/assets/fonts/muyao-softbrush.ttf',
   },
   {
     id: 'ipix-chinese-pixel',
     label: 'IPix 中文像素',
     cssFamily: '"IPix Chinese Pixel", "PingFang SC", sans-serif',
-    source: '/fonts/bundled/ipix-chinese-pixel.ttf',
+    source: '/assets/fonts/ipix-chinese-pixel.ttf',
   },
 ];
 
@@ -133,7 +133,7 @@ export async function loadFontOption(font: FontOption): Promise<void> {
   const response = await fetch(fontUrl, { cache: 'force-cache' });
 
   if (!response.ok) {
-    throw new Error(`字体文件请求失败：HTTP ${response.status}`);
+    throw new Error(`字体文件请求失败：HTTP ${response.status}\n${fontUrl}`);
   }
 
   const fontData = await response.arrayBuffer();

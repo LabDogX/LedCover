@@ -20,8 +20,6 @@ dist-ssr
 # Bundled fonts
 public/fonts/*
 !public/fonts/README.md
-!public/fonts/bundled/
-!public/fonts/bundled/*
 
 # Editor directories and files
 .vscode/*
