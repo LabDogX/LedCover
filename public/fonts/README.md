@@ -9,6 +9,8 @@ Current policy:
 - Put selected app fonts in `public/assets/fonts/`.
 - Register selected fonts in `utils/fonts.ts` under `PROJECT_FONT_OPTIONS`.
 - Prefer `.woff2` when available.
+- Use stable extensionless filenames for bundled fonts when deploying behind NAS
+  or reverse proxies that block `.ttf` or `.otf` requests.
 - Keep the total bundled font set around 50-100 MB or less.
 - Keep full font libraries outside the app repository.
 
