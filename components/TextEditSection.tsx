@@ -1,14 +1,39 @@
-import React from 'react';
-import { Type, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Type, AlignLeft, AlignCenter, AlignRight, Upload } from 'lucide-react';
 import { EditableElement } from '../types';
 import { EMOJI_PRESETS } from '../utils/presets';
+import { FONT_OPTIONS, FontOption } from '../utils/fonts';
 
 interface TextEditSectionProps {
   elements: EditableElement[];
-  onChange: (elementId: string, newText: string, color?: string, align?: 'left' | 'center' | 'right') => void;
+  onChange: (
+    elementId: string,
+    newText: string,
+    color?: string,
+    align?: 'left' | 'center' | 'right',
+    fontFamily?: string
+  ) => void;
+}
+
+interface UploadedFontOption extends FontOption {
+  objectUrl: string;
 }
 
 const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange }) => {
+  const [uploadedFonts, setUploadedFonts] = useState<UploadedFontOption[]>([]);
+  const uploadedFontUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      uploadedFontUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  const fontOptions = useMemo<FontOption[]>(
+    () => [...FONT_OPTIONS, ...uploadedFonts],
+    [uploadedFonts]
+  );
+
   if (elements.length === 0) {
     return (
       <div className="text-center text-slate-400 py-6 text-sm">
@@ -34,27 +59,96 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
 
   const handleColorChange = (elementId: string, newText: string, color: string) => {
     const element = elements.find(el => el.id === elementId);
-    onChange(elementId, newText, color, element?.align);
+    onChange(elementId, newText, color, element?.align, element?.fontFamily);
   };
 
   const handleAlignChange = (elementId: string, align: 'left' | 'center' | 'right') => {
     const element = elements.find(el => el.id === elementId);
     // 只有当对齐方式真正改变时才触发更新
     if (element?.align !== align) {
-      onChange(elementId, element?.text || '', element?.color, align);
+      onChange(elementId, element?.text || '', element?.color, align, element?.fontFamily);
     }
+  };
+
+  const handleFontChange = (element: EditableElement, fontFamily: string) => {
+    onChange(element.id, element.text, element.color, element.align, fontFamily);
   };
 
   const handleEmojiClick = (element: EditableElement, emoji: string) => {
     const nextText = element.type === 'emoji' ? emoji : `${element.text}${emoji}`;
-    onChange(element.id, nextText, element.color, element.align);
+    onChange(element.id, nextText, element.color, element.align, element.fontFamily);
+  };
+
+  const getFontOptionsForElement = (element: EditableElement): FontOption[] => {
+    if (!element.fontFamily || fontOptions.some((font) => font.cssFamily === element.fontFamily)) {
+      return fontOptions;
+    }
+
+    return [
+      {
+        id: `${element.id}-current-font`,
+        label: '当前模板字体',
+        cssFamily: element.fontFamily,
+      },
+      ...fontOptions,
+    ];
+  };
+
+  const handleFontUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    const loadedFonts: UploadedFontOption[] = [];
+
+    for (const file of files) {
+      const objectUrl = URL.createObjectURL(file);
+      const baseName = file.name.replace(/\.(ttf|otf|woff2?|TTF|OTF|WOFF2?)$/, '');
+      const safeName = baseName.replace(/[^\w\u4e00-\u9fa5-]+/g, ' ').trim() || 'Custom Font';
+      const family = `LedCover ${safeName} ${file.lastModified}`;
+
+      try {
+        const fontFace = new FontFace(family, `url("${objectUrl}")`);
+        await fontFace.load();
+        document.fonts.add(fontFace);
+
+        loadedFonts.push({
+          id: `uploaded-${file.name}-${file.lastModified}`,
+          label: safeName,
+          cssFamily: `"${family}", "PingFang SC", "Microsoft YaHei", sans-serif`,
+          objectUrl,
+        });
+        uploadedFontUrlsRef.current.push(objectUrl);
+      } catch {
+        URL.revokeObjectURL(objectUrl);
+        alert(`字体加载失败：${file.name}`);
+      }
+    }
+
+    if (loadedFonts.length > 0) {
+      setUploadedFonts((prev) => [...prev, ...loadedFonts]);
+    }
+
+    event.target.value = '';
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-        <Type className="w-4 h-4" />
-        文字内容
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <Type className="w-4 h-4" />
+          文字内容
+        </div>
+        <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+          <Upload className="w-3.5 h-3.5" />
+          上传字体
+          <input
+            type="file"
+            accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"
+            multiple
+            className="hidden"
+            onChange={handleFontUpload}
+          />
+        </label>
       </div>
 
       <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2">
@@ -68,9 +162,10 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
             <input
               type="text"
               value={element.text}
-              onChange={(e) => onChange(element.id, e.target.value, element.color, element.align)}
+              onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily)}
               placeholder={element.placeholder}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400"
+              style={{ fontFamily: element.fontFamily || undefined }}
             />
 
             {/* Emoji 快捷插入 */}
@@ -89,6 +184,29 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
                 </button>
               ))}
             </div>
+
+            {element.type !== 'emoji' && (
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-500 shrink-0">字体:</label>
+                <select
+                  value={element.fontFamily || ''}
+                  onChange={(e) => handleFontChange(element, e.target.value)}
+                  className="min-w-0 flex-1 px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white focus:ring-1 focus:ring-indigo-500 outline-none"
+                  style={{ fontFamily: element.fontFamily || undefined }}
+                >
+                  <option value="">模板默认</option>
+                  {getFontOptionsForElement(element).map((font) => (
+                    <option
+                      key={`${element.id}-${font.id}`}
+                      value={font.cssFamily}
+                      style={{ fontFamily: font.cssFamily }}
+                    >
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* 颜色和对齐控制 */}
             <div className="flex items-center gap-2 flex-wrap">

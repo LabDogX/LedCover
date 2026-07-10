@@ -40,6 +40,7 @@ export interface EditableElement {
   // 新增：字体颜色和文字对齐
   color?: string;
   align?: 'left' | 'center' | 'right';
+  fontFamily?: string;
 }
 
 export interface BackgroundEdit {

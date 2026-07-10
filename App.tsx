@@ -11,6 +11,7 @@ import SettingsModal from './components/SettingsModal';
 import Logo from './components/Logo';
 import { Github, Settings as SettingsIcon, ChevronLeft, Sparkles } from 'lucide-react';
 import { applyProviderDefaults, getProviderDisplayName, getProviderOption } from './utils/aiProviders';
+import { loadProjectFonts } from './utils/fonts';
 
 const DEFAULT_SETTINGS: AppSettings = applyProviderDefaults({
   provider: AIProvider.DeepSeek,
@@ -75,6 +76,10 @@ const App: React.FC = () => {
 
   // Load settings from local storage on mount
   useEffect(() => {
+    loadProjectFonts().catch((error) => {
+      console.warn('Failed to load bundled fonts', error);
+    });
+
     const savedSettings = localStorage.getItem('led_cover_settings') || localStorage.getItem('gudong_cover_settings');
     if (savedSettings) {
       try {
@@ -130,12 +135,18 @@ const App: React.FC = () => {
   };
 
   // 文字修改
-  const handleTextChange = (elementId: string, newText: string, color?: string, align?: 'left' | 'center' | 'right') => {
+  const handleTextChange = (
+    elementId: string,
+    newText: string,
+    color?: string,
+    align?: 'left' | 'center' | 'right',
+    fontFamily?: string
+  ) => {
     if (!currentHtml) return;
 
     // 更新 HTML
     const newHtml = modifyHtml(currentHtml, {
-      text: [{ elementId, newText, color, align }],
+      text: [{ elementId, newText, color, align, fontFamily }],
     });
     setCurrentHtml(newHtml);
 
@@ -143,7 +154,7 @@ const App: React.FC = () => {
     setEditableElements(prev =>
       prev.map(el =>
         el.id === elementId
-          ? { ...el, text: newText, color, align }
+          ? { ...el, text: newText, color, align, fontFamily }
           : el
       )
     );

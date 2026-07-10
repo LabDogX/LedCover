@@ -12,7 +12,13 @@ interface EditPanelProps {
   editableElements: EditableElement[];
   background: BackgroundEdit | null;
   onTemplateChange: (templateId: CoverTemplateId) => void;
-  onTextChange: (elementId: string, newText: string, color?: string, align?: 'left' | 'center' | 'right') => void;
+  onTextChange: (
+    elementId: string,
+    newText: string,
+    color?: string,
+    align?: 'left' | 'center' | 'right',
+    fontFamily?: string
+  ) => void;
   onBackgroundChange: (background: BackgroundEdit) => void;
   onReset: () => void;
   onClose?: () => void;

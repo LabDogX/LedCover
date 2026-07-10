@@ -34,6 +34,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
       const element = heading as HTMLElement;
       const color = element.style.color || undefined;
       const textAlign = element.style.textAlign;
+      const fontFamily = element.style.fontFamily || undefined;
 
       // 确定对齐方式：优先使用内联样式，否则默认为 center
       let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
@@ -48,6 +49,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
         placeholder: '编辑标题',
         color,
         align,
+        fontFamily,
       });
       headingIndex++;
     }
@@ -61,6 +63,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
       const element = p as HTMLElement;
       const color = element.style.color || undefined;
       const textAlign = element.style.textAlign;
+      const fontFamily = element.style.fontFamily || undefined;
 
       // 确定对齐方式：优先使用内联样式，否则默认为 center
       let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
@@ -75,6 +78,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
         placeholder: '编辑副标题',
         color,
         align,
+        fontFamily,
       });
       paragraphIndex++;
     }
@@ -92,6 +96,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
         const element = span as HTMLElement;
         const color = element.style.color || undefined;
         const textAlign = element.style.textAlign;
+        const fontFamily = element.style.fontFamily || undefined;
 
         // 确定对齐方式：优先使用内联样式，否则默认为 center
         let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
@@ -106,6 +111,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
           placeholder: '编辑标签',
           color,
           align,
+          fontFamily,
         });
         seenTagTexts.add(text);
         tagIndex++;
@@ -121,6 +127,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
       const element = emoji as HTMLElement;
       const color = element.style.color || undefined;
       const textAlign = element.style.textAlign;
+      const fontFamily = element.style.fontFamily || undefined;
 
       let align: 'left' | 'center' | 'right' = 'center';
       if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
@@ -134,6 +141,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
         placeholder: '编辑 Emoji',
         color,
         align,
+        fontFamily,
       });
       emojiIndex++;
     }

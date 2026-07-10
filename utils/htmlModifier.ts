@@ -5,6 +5,7 @@ export interface TextModification {
   newText: string;
   color?: string;
   align?: 'left' | 'center' | 'right';
+  fontFamily?: string;
 }
 
 export interface ModificationOptions {
@@ -35,8 +36,6 @@ export function modifyHtml(
       if (element) {
         const htmlElement = element as HTMLElement;
 
-        console.log('[modifyHtml] 修改元素:', mod.elementId, '对齐:', mod.align, '颜色:', mod.color);
-
         // 先应用样式（在修改文本内容之前）
         if (mod.color) {
           htmlElement.style.color = mod.color;
@@ -46,13 +45,17 @@ export function modifyHtml(
           htmlElement.style.removeProperty('text-align');
           // 设置新的内联样式
           htmlElement.style.setProperty('text-align', mod.align, 'important');
-          console.log('[modifyHtml] 设置后的 textAlign:', htmlElement.style.textAlign);
+        }
+        if (mod.fontFamily !== undefined) {
+          if (mod.fontFamily) {
+            htmlElement.style.fontFamily = mod.fontFamily;
+          } else {
+            htmlElement.style.removeProperty('font-family');
+          }
         }
 
         // 然后修改文本内容
         element.textContent = mod.newText;
-      } else {
-        console.warn('[modifyHtml] 未找到元素:', mod.elementId);
       }
     });
   }
