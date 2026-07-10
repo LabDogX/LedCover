@@ -1,0 +1,5 @@
+{
+  "name": "LedCover",
+  "description": "A self-hosted dual-platform AI cover editor for WeChat Official Account and Xiaohongshu covers.",
+  "requestFramePermissions": []
+}

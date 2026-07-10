@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  led-cover:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: led-cover
+    ports:
+      - "7211:80"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    labels:
+      - "com.ledcover.description=AI双平台封面编辑器"
+      - "com.ledcover.version=1.0.0"
+
+networks:
+  default:
+    name: led-cover-network
