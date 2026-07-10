@@ -105,7 +105,7 @@ function generateXhsBoldTitleTemplate(): string {
     <p data-editable-id="paragraph-0" style="font-size:34px;color:#334155;font-weight:800;margin:0;text-align:center;line-height:1.4;background:#ffffff;padding:18px 28px;border:4px solid #0f172a;box-shadow:8px 8px 0 #0f172a;">在这里输入副标题</p>
   </div>
 
-  <div style="position:relative;z-index:10;padding:38px 58px;background:#0f172a;color:#ffffff;font-size:28px;font-weight:900;text-align:center;letter-spacing:4px;">
+  <div data-editable-id="footer-0" data-editable-type="footer" style="position:relative;z-index:10;padding:38px 58px;background:#0f172a;color:#ffffff;font-size:28px;font-weight:900;text-align:center;letter-spacing:4px;">
     小红书封面
   </div>
 </div>`;
@@ -149,7 +149,7 @@ function generateXhsSoftGradientTemplate(): string {
     </div>
   </div>
 
-  <div style="position:relative;z-index:10;text-align:center;font-size:28px;font-weight:900;color:#0f172a;">
+  <div data-editable-id="footer-0" data-editable-type="footer" style="position:relative;z-index:10;text-align:center;font-size:28px;font-weight:900;color:#0f172a;">
     XIAOHONGSHU COVER
   </div>
 </div>`;

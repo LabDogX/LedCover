@@ -1,14 +1,17 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { domToPng } from 'modern-screenshot';
-import { Platform } from '../types';
-import { Download, Edit2, AlertCircle, Maximize2 } from 'lucide-react';
+import { EditableElement, Platform } from '../types';
+import { Download, Edit2, AlertCircle, Maximize2, EyeOff } from 'lucide-react';
 
 interface PreviewSectionProps {
   html: string | null;
   platform: Platform;
   isLoading: boolean;
   onEnterEditMode?: () => void;
+  editableElements?: EditableElement[];
+  onElementPositionChange?: (elementId: string, position: { x: number; y: number }) => void;
+  onElementVisibilityChange?: (elementId: string, visible: boolean) => void;
   compact?: boolean;
 }
 
@@ -17,11 +20,37 @@ const BASE_WIDTH = 1080;
 const RATIO_WECHAT = 2.35;
 const RATIO_XHS = 3 / 4;
 
-const PreviewSection: React.FC<PreviewSectionProps> = ({ html, platform, isLoading, onEnterEditMode, compact = false }) => {
+const SNAP_THRESHOLD = 18;
+
+const PreviewSection: React.FC<PreviewSectionProps> = ({
+  html,
+  platform,
+  isLoading,
+  onEnterEditMode,
+  editableElements = [],
+  onElementPositionChange,
+  onElementVisibilityChange,
+  compact = false,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasShellRef = useRef<HTMLDivElement>(null);
   const renderRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [snapGuides, setSnapGuides] = useState({ vertical: false, horizontal: false });
+  const [activeControl, setActiveControl] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  const dragStateRef = useRef<{
+    id: string;
+    element: HTMLElement;
+    root: HTMLElement;
+    offsetX: number;
+    offsetY: number;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const targetHeight = platform === Platform.WeChat
     ? BASE_WIDTH / RATIO_WECHAT
@@ -54,20 +83,184 @@ const PreviewSection: React.FC<PreviewSectionProps> = ({ html, platform, isLoadi
     return () => observer.disconnect();
   }, [platform, targetHeight, html]);
 
+  useEffect(() => {
+    if (!html || (!onElementPositionChange && !onElementVisibilityChange)) return;
+
+    const renderElement = renderRef.current;
+    const rootElement = renderElement?.firstElementChild as HTMLElement | null;
+    if (!renderElement || !rootElement) return;
+
+    const editableIds = new Set(editableElements.filter((element) => element.visible !== false).map((element) => element.id));
+    const editableNodes = rootElement.querySelectorAll<HTMLElement>('[data-editable-id]');
+    editableNodes.forEach((node) => {
+      if (editableIds.has(node.getAttribute('data-editable-id') || '')) {
+        node.style.cursor = 'grab';
+        node.style.touchAction = 'none';
+      }
+    });
+
+    const updateActiveControl = (node: HTMLElement) => {
+      if (!onElementVisibilityChange || dragStateRef.current) return;
+
+      const elementId = node.getAttribute('data-editable-id') || '';
+      if (!editableIds.has(elementId)) return;
+
+      const rootRect = rootElement.getBoundingClientRect();
+      const elementRect = node.getBoundingClientRect();
+      setActiveControl({
+        id: elementId,
+        x: (elementRect.right - rootRect.left) / scale,
+        y: (elementRect.top - rootRect.top) / scale,
+      });
+    };
+
+    const handlePointerOver = (event: PointerEvent) => {
+      const target = event.target as HTMLElement;
+      const editableNode = target.closest<HTMLElement>('[data-editable-id]');
+      if (!editableNode || !rootElement.contains(editableNode)) return;
+      updateActiveControl(editableNode);
+    };
+
+    const handleHoverMove = (event: PointerEvent) => {
+      if (dragStateRef.current) return;
+      const target = event.target as HTMLElement;
+      const editableNode = target.closest<HTMLElement>('[data-editable-id]');
+      if (!editableNode || !rootElement.contains(editableNode)) return;
+      updateActiveControl(editableNode);
+    };
+
+    const getPointerPosition = (event: PointerEvent, rootRect: DOMRect) => ({
+      x: (event.clientX - rootRect.left) / scale,
+      y: (event.clientY - rootRect.top) / scale,
+    });
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const dragState = dragStateRef.current;
+      if (!dragState) return;
+
+      event.preventDefault();
+
+      const rootRect = dragState.root.getBoundingClientRect();
+      const pointer = getPointerPosition(event, rootRect);
+      let nextX = pointer.x - dragState.offsetX;
+      let nextY = pointer.y - dragState.offsetY;
+
+      nextX = Math.max(0, Math.min(BASE_WIDTH - dragState.width, nextX));
+      nextY = Math.max(0, Math.min(targetHeight - dragState.height, nextY));
+
+      const elementCenterX = nextX + dragState.width / 2;
+      const elementCenterY = nextY + dragState.height / 2;
+      const canvasCenterX = BASE_WIDTH / 2;
+      const canvasCenterY = targetHeight / 2;
+      const shouldSnapX = Math.abs(elementCenterX - canvasCenterX) <= SNAP_THRESHOLD;
+      const shouldSnapY = Math.abs(elementCenterY - canvasCenterY) <= SNAP_THRESHOLD;
+
+      if (shouldSnapX) {
+        nextX = canvasCenterX - dragState.width / 2;
+      }
+      if (shouldSnapY) {
+        nextY = canvasCenterY - dragState.height / 2;
+      }
+
+      dragState.x = Math.round(nextX);
+      dragState.y = Math.round(nextY);
+      dragState.element.style.left = `${dragState.x}px`;
+      dragState.element.style.top = `${dragState.y}px`;
+      setSnapGuides({ vertical: shouldSnapX, horizontal: shouldSnapY });
+    };
+
+    const handlePointerUp = () => {
+      const dragState = dragStateRef.current;
+      if (!dragState) return;
+
+      dragState.element.style.cursor = 'grab';
+      onElementPositionChange?.(dragState.id, { x: dragState.x, y: dragState.y });
+      dragStateRef.current = null;
+      setSnapGuides({ vertical: false, horizontal: false });
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+
+      const target = event.target as HTMLElement;
+      const editableNode = target.closest<HTMLElement>('[data-editable-id]');
+      if (!editableNode || !rootElement.contains(editableNode)) return;
+
+      const elementId = editableNode.getAttribute('data-editable-id') || '';
+      if (!editableIds.has(elementId)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const rootRect = rootElement.getBoundingClientRect();
+      const elementRect = editableNode.getBoundingClientRect();
+      const pointer = getPointerPosition(event, rootRect);
+      const currentX = (elementRect.left - rootRect.left) / scale;
+      const currentY = (elementRect.top - rootRect.top) / scale;
+      const width = elementRect.width / scale;
+      const height = elementRect.height / scale;
+
+      if (editableNode.parentElement !== rootElement) {
+        rootElement.appendChild(editableNode);
+      }
+
+      editableNode.style.position = 'absolute';
+      editableNode.style.left = `${Math.round(currentX)}px`;
+      editableNode.style.top = `${Math.round(currentY)}px`;
+      editableNode.style.right = '';
+      editableNode.style.bottom = '';
+      editableNode.style.margin = '0';
+      editableNode.style.zIndex = editableNode.style.zIndex || '30';
+      editableNode.style.cursor = 'grabbing';
+
+      dragStateRef.current = {
+        id: elementId,
+        element: editableNode,
+        root: rootElement,
+        offsetX: pointer.x - currentX,
+        offsetY: pointer.y - currentY,
+        width,
+        height,
+        x: Math.round(currentX),
+        y: Math.round(currentY),
+      };
+
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
+    };
+
+    rootElement.addEventListener('pointerdown', handlePointerDown);
+    rootElement.addEventListener('pointerover', handlePointerOver);
+    rootElement.addEventListener('pointermove', handleHoverMove);
+
+    return () => {
+      rootElement.removeEventListener('pointerdown', handlePointerDown);
+      rootElement.removeEventListener('pointerover', handlePointerOver);
+      rootElement.removeEventListener('pointermove', handleHoverMove);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [editableElements, html, onElementPositionChange, onElementVisibilityChange, scale, targetHeight]);
+
   const handleDownload = async () => {
     if (!html || isDownloading) return;
     setIsDownloading(true);
 
     // Store original styles
-    const originalTransform = renderRef.current?.style.transform || '';
+    const originalTransform = canvasShellRef.current?.style.transform || '';
 
     try {
       // Wait for fonts
       await document.fonts.ready;
 
       // Temporarily remove scale for full-resolution capture
-      if (renderRef.current) {
-        renderRef.current.style.transform = 'none';
+      if (canvasShellRef.current) {
+        canvasShellRef.current.style.transform = 'none';
       }
 
       // Wait for repaint
@@ -97,8 +290,8 @@ const PreviewSection: React.FC<PreviewSectionProps> = ({ html, platform, isLoadi
       alert('下载失败：' + (error as Error).message);
     } finally {
       // Restore transform
-      if (renderRef.current) {
-        renderRef.current.style.transform = originalTransform;
+      if (canvasShellRef.current) {
+        canvasShellRef.current.style.transform = originalTransform;
       }
       setIsDownloading(false);
     }
@@ -187,7 +380,7 @@ const PreviewSection: React.FC<PreviewSectionProps> = ({ html, platform, isLoadi
         >
           {html && (
             <div
-              ref={renderRef}
+              ref={canvasShellRef}
               style={{
                 width: BASE_WIDTH,
                 height: targetHeight,
@@ -195,9 +388,48 @@ const PreviewSection: React.FC<PreviewSectionProps> = ({ html, platform, isLoadi
                 transformOrigin: 'center center',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               }}
-              className="transition-transform duration-200 flex-shrink-0"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+              className="transition-transform duration-200 flex-shrink-0 relative"
+              onMouseLeave={() => setActiveControl(null)}
+            >
+              <div
+                ref={renderRef}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+              {snapGuides.vertical && (
+                <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 border-l-2 border-dashed border-indigo-500/80 z-[9999]" />
+              )}
+              {snapGuides.horizontal && (
+                <div className="pointer-events-none absolute left-0 right-0 top-1/2 border-t-2 border-dashed border-indigo-500/80 z-[9999]" />
+              )}
+              {activeControl && onElementVisibilityChange && (
+                <button
+                  type="button"
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onElementVisibilityChange(activeControl.id, false);
+                    setActiveControl(null);
+                  }}
+                  className="absolute z-[10000] w-9 h-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-950/90 text-white border border-white/70 shadow-lg flex items-center justify-center hover:bg-indigo-600 transition-colors"
+                  style={{
+                    left: activeControl.x,
+                    top: activeControl.y,
+                  }}
+                  title="隐藏元素"
+                  aria-label="隐藏元素"
+                >
+                  <EyeOff className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

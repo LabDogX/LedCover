@@ -19,6 +19,7 @@ interface EditPanelProps {
     align?: 'left' | 'center' | 'right',
     fontFamily?: string
   ) => void;
+  onElementVisibilityChange: (elementId: string, visible: boolean) => void;
   onBackgroundChange: (background: BackgroundEdit) => void;
   onReset: () => void;
   onClose?: () => void;
@@ -31,6 +32,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
   background,
   onTemplateChange,
   onTextChange,
+  onElementVisibilityChange,
   onBackgroundChange,
   onReset,
   onClose,
@@ -73,6 +75,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
         <TextEditSection
           elements={editableElements}
           onChange={onTextChange}
+          onVisibilityChange={onElementVisibilityChange}
         />
 
         {/* 背景编辑 */}

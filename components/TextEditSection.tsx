@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Type, AlignLeft, AlignCenter, AlignRight, Upload } from 'lucide-react';
+import { Type, AlignLeft, AlignCenter, AlignRight, Upload, Eye, EyeOff } from 'lucide-react';
 import { EditableElement } from '../types';
 import { EMOJI_PRESETS } from '../utils/presets';
 import { FONT_OPTIONS, FontOption, loadFontOption } from '../utils/fonts';
@@ -13,13 +13,14 @@ interface TextEditSectionProps {
     align?: 'left' | 'center' | 'right',
     fontFamily?: string
   ) => void;
+  onVisibilityChange: (elementId: string, visible: boolean) => void;
 }
 
 interface UploadedFontOption extends FontOption {
   objectUrl: string;
 }
 
-const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange }) => {
+const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, onVisibilityChange }) => {
   const [uploadedFonts, setUploadedFonts] = useState<UploadedFontOption[]>([]);
   const uploadedFontUrlsRef = useRef<string[]>([]);
 
@@ -52,6 +53,8 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
         return '标签';
       case 'emoji':
         return 'Emoji';
+      case 'footer':
+        return '底部元素';
       default:
         return '文字';
     }
@@ -165,10 +168,31 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
 
       <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2">
         {elements.map((element) => (
-          <div key={element.id} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              {getElementTypeLabel(element.type)}
-            </label>
+          <div
+            key={element.id}
+            className={`flex flex-col gap-2 p-3 rounded-lg border transition-colors ${
+              element.visible === false
+                ? 'bg-slate-100 border-slate-200 opacity-75'
+                : 'bg-slate-50 border-slate-200'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                {getElementTypeLabel(element.type)}
+              </label>
+              <button
+                onClick={() => onVisibilityChange(element.id, element.visible === false)}
+                className={`p-1.5 rounded-md border transition-colors ${
+                  element.visible === false
+                    ? 'bg-white text-slate-500 border-slate-200 hover:text-indigo-600'
+                    : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50'
+                }`}
+                title={element.visible === false ? '显示元素' : '隐藏元素'}
+                aria-label={element.visible === false ? '显示元素' : '隐藏元素'}
+              >
+                {element.visible === false ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
 
             {/* 文字输入 */}
             <input
@@ -176,7 +200,8 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange })
               value={element.text}
               onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily)}
               placeholder={element.placeholder}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400"
+              disabled={element.visible === false}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400"
               style={{ fontFamily: element.fontFamily || undefined }}
             />
 

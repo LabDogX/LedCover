@@ -8,8 +8,15 @@ export interface TextModification {
   fontFamily?: string;
 }
 
+export interface ElementModification {
+  elementId: string;
+  visible?: boolean;
+  position?: { x: number; y: number };
+}
+
 export interface ModificationOptions {
   text?: TextModification[];
+  element?: ElementModification[];
   background?: BackgroundEdit;
 }
 
@@ -60,12 +67,62 @@ export function modifyHtml(
     });
   }
 
+  if (modifications.element) {
+    modifications.element.forEach(mod => {
+      applyElementState(rootElement, mod);
+    });
+  }
+
   // 修改背景
   if (modifications.background) {
     applyBackground(rootElement, modifications.background);
   }
 
   return rootElement.outerHTML;
+}
+
+function applyElementState(rootElement: HTMLElement, mod: ElementModification): void {
+  const element = rootElement.querySelector(`[data-editable-id="${mod.elementId}"]`) as HTMLElement | null;
+  if (!element) return;
+
+  if (mod.visible !== undefined) {
+    if (mod.visible) {
+      element.setAttribute('data-hidden', 'false');
+      const storedDisplay = element.getAttribute('data-ledcover-display');
+      if (storedDisplay) {
+        element.style.display = storedDisplay;
+        element.removeAttribute('data-ledcover-display');
+      } else {
+        element.style.removeProperty('display');
+      }
+    } else {
+      const currentDisplay = element.style.display;
+      if (currentDisplay && currentDisplay !== 'none') {
+        element.setAttribute('data-ledcover-display', currentDisplay);
+      }
+      element.setAttribute('data-hidden', 'true');
+      element.style.display = 'none';
+    }
+  }
+
+  if (mod.position) {
+    if (element.parentElement !== rootElement) {
+      rootElement.appendChild(element);
+    }
+
+    element.setAttribute('data-position-x', String(Math.round(mod.position.x)));
+    element.setAttribute('data-position-y', String(Math.round(mod.position.y)));
+    element.setAttribute('data-layout', 'free');
+    element.style.position = 'absolute';
+    element.style.left = `${Math.round(mod.position.x)}px`;
+    element.style.top = `${Math.round(mod.position.y)}px`;
+    element.style.right = '';
+    element.style.bottom = '';
+    element.style.margin = '0';
+    element.style.zIndex = element.style.zIndex || '30';
+    element.style.touchAction = 'none';
+    element.style.cursor = 'grab';
+  }
 }
 
 /**

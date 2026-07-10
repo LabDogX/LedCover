@@ -34,13 +34,15 @@ export interface GenerationConfig {
 // 编辑功能相关类型
 export interface EditableElement {
   id: string;
-  type: 'title' | 'subtitle' | 'tag' | 'emoji';
+  type: 'title' | 'subtitle' | 'tag' | 'emoji' | 'footer';
   text: string;
   placeholder?: string;
   // 新增：字体颜色和文字对齐
   color?: string;
   align?: 'left' | 'center' | 'right';
   fontFamily?: string;
+  visible?: boolean;
+  position?: { x: number; y: number };
 }
 
 export interface BackgroundEdit {

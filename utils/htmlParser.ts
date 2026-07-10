@@ -25,6 +25,37 @@ export function parseHtmlForEditing(html: string): ParsedResult {
   let paragraphIndex = 0;
   let tagIndex = 0;
   let emojiIndex = 0;
+  let footerIndex = 0;
+
+  const getCommonElementState = (element: HTMLElement) => {
+    const color = element.style.color || undefined;
+    const textAlign = element.style.textAlign;
+    const fontFamily = element.style.fontFamily || undefined;
+
+    let align: 'left' | 'center' | 'right' = 'center';
+    if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
+      align = textAlign;
+    }
+
+    const x = Number(element.getAttribute('data-position-x'));
+    const y = Number(element.getAttribute('data-position-y'));
+    const hasStoredPosition = Number.isFinite(x) && Number.isFinite(y);
+    const styleX = parseFloat(element.style.left);
+    const styleY = parseFloat(element.style.top);
+    const hasStylePosition = element.style.position === 'absolute' && Number.isFinite(styleX) && Number.isFinite(styleY);
+
+    return {
+      color,
+      align,
+      fontFamily,
+      visible: element.getAttribute('data-hidden') !== 'true' && element.style.display !== 'none',
+      position: hasStoredPosition
+        ? { x, y }
+        : hasStylePosition
+          ? { x: styleX, y: styleY }
+          : undefined,
+    };
+  };
 
   // 查找标题 (h1, h2, h3) - 只提取有文本内容的
   const headings = rootElement.querySelectorAll('h1, h2, h3');
@@ -32,24 +63,14 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     const text = heading.textContent?.trim() || '';
     if (text) {
       const element = heading as HTMLElement;
-      const color = element.style.color || undefined;
-      const textAlign = element.style.textAlign;
-      const fontFamily = element.style.fontFamily || undefined;
-
-      // 确定对齐方式：优先使用内联样式，否则默认为 center
-      let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
-      if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
-        align = textAlign;
-      }
+      const commonState = getCommonElementState(element);
 
       editableElements.push({
-        id: `heading-${headingIndex}`,
+        id: element.getAttribute('data-editable-id') || `heading-${headingIndex}`,
         type: 'title',
         text,
         placeholder: '编辑标题',
-        color,
-        align,
-        fontFamily,
+        ...commonState,
       });
       headingIndex++;
     }
@@ -61,24 +82,14 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     const text = p.textContent?.trim();
     if (text && text.length < 100 && text.length > 0) {
       const element = p as HTMLElement;
-      const color = element.style.color || undefined;
-      const textAlign = element.style.textAlign;
-      const fontFamily = element.style.fontFamily || undefined;
-
-      // 确定对齐方式：优先使用内联样式，否则默认为 center
-      let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
-      if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
-        align = textAlign;
-      }
+      const commonState = getCommonElementState(element);
 
       editableElements.push({
-        id: `paragraph-${paragraphIndex}`,
+        id: element.getAttribute('data-editable-id') || `paragraph-${paragraphIndex}`,
         type: 'subtitle',
         text,
         placeholder: '编辑副标题',
-        color,
-        align,
-        fontFamily,
+        ...commonState,
       });
       paragraphIndex++;
     }
@@ -94,24 +105,14 @@ export function parseHtmlForEditing(html: string): ParsedResult {
       // 避免重复（与 markEditableElements 中的遍历顺序一致）
       if (!seenTagTexts.has(text)) {
         const element = span as HTMLElement;
-        const color = element.style.color || undefined;
-        const textAlign = element.style.textAlign;
-        const fontFamily = element.style.fontFamily || undefined;
-
-        // 确定对齐方式：优先使用内联样式，否则默认为 center
-        let align: 'left' | 'center' | 'right' = 'center'; // 默认居中
-        if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
-          align = textAlign;
-        }
+        const commonState = getCommonElementState(element);
 
         editableElements.push({
-          id: `tag-${tagIndex}`,
+          id: element.getAttribute('data-editable-id') || `tag-${tagIndex}`,
           type: 'tag',
           text,
           placeholder: '编辑标签',
-          color,
-          align,
-          fontFamily,
+          ...commonState,
         });
         seenTagTexts.add(text);
         tagIndex++;
@@ -125,26 +126,33 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     const text = emoji.textContent?.trim();
     if (text) {
       const element = emoji as HTMLElement;
-      const color = element.style.color || undefined;
-      const textAlign = element.style.textAlign;
-      const fontFamily = element.style.fontFamily || undefined;
-
-      let align: 'left' | 'center' | 'right' = 'center';
-      if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
-        align = textAlign;
-      }
+      const commonState = getCommonElementState(element);
 
       editableElements.push({
         id: element.getAttribute('data-editable-id') || `emoji-${emojiIndex}`,
         type: 'emoji',
         text,
         placeholder: '编辑 Emoji',
-        color,
-        align,
-        fontFamily,
+        ...commonState,
       });
       emojiIndex++;
     }
+  });
+
+  const footerElements = rootElement.querySelectorAll('[data-editable-type="footer"]');
+  footerElements.forEach((footer) => {
+    const element = footer as HTMLElement;
+    const text = element.textContent?.trim() || '底部元素';
+    const commonState = getCommonElementState(element);
+
+    editableElements.push({
+      id: element.getAttribute('data-editable-id') || `footer-${footerIndex}`,
+      type: 'footer',
+      text,
+      placeholder: '编辑底部文字',
+      ...commonState,
+    });
+    footerIndex++;
   });
 
   // 分析背景
@@ -210,6 +218,7 @@ export function markEditableElements(html: string): string {
   let paragraphIndex = 0;
   let tagIndex = 0;
   let emojiIndex = 0;
+  let footerIndex = 0;
 
   // 标记标题 (h1, h2, h3) - 只标记有文本内容的
   const headings = rootElement.querySelectorAll('h1, h2, h3');
@@ -250,6 +259,30 @@ export function markEditableElements(html: string): string {
       emojiIndex++;
     }
   });
+
+  const explicitFooterElements = rootElement.querySelectorAll('[data-editable-type="footer"]');
+  explicitFooterElements.forEach((footer) => {
+    const element = footer as HTMLElement;
+    if (!element.getAttribute('data-editable-id')) {
+      element.setAttribute('data-editable-id', `footer-${footerIndex}`);
+    }
+    footerIndex++;
+  });
+
+  const lastChild = rootElement.lastElementChild as HTMLElement | null;
+  const lastChildText = lastChild?.textContent?.trim() || '';
+  if (
+    lastChild &&
+    !lastChild.getAttribute('data-editable-id') &&
+    !lastChild.querySelector('[data-editable-id]') &&
+    !lastChild.getAttribute('data-bg-layer') &&
+    !lastChild.getAttribute('data-overlay') &&
+    lastChildText.length >= 2 &&
+    lastChildText.length <= 40
+  ) {
+    lastChild.setAttribute('data-editable-id', `footer-${footerIndex}`);
+    lastChild.setAttribute('data-editable-type', 'footer');
+  }
 
   return rootElement.outerHTML;
 }

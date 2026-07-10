@@ -163,6 +163,36 @@ const App: React.FC = () => {
     setBackground(newBackground);
   };
 
+  const handleElementVisibilityChange = (elementId: string, visible: boolean) => {
+    if (!currentHtml) return;
+    const newHtml = modifyHtml(currentHtml, {
+      element: [{ elementId, visible }],
+    });
+    setCurrentHtml(newHtml);
+    setEditableElements(prev =>
+      prev.map(el =>
+        el.id === elementId
+          ? { ...el, visible }
+          : el
+      )
+    );
+  };
+
+  const handleElementPositionChange = (elementId: string, position: { x: number; y: number }) => {
+    if (!currentHtml) return;
+    const newHtml = modifyHtml(currentHtml, {
+      element: [{ elementId, position }],
+    });
+    setCurrentHtml(newHtml);
+    setEditableElements(prev =>
+      prev.map(el =>
+        el.id === elementId
+          ? { ...el, position }
+          : el
+      )
+    );
+  };
+
   // 重置到初始模板
   const handleReset = () => {
     const initialTemplate = generateInitialTemplate(platform, selectedTemplateId);
@@ -298,6 +328,9 @@ const App: React.FC = () => {
               html={currentHtml}
               platform={platform}
               isLoading={isLoading}
+              editableElements={editableElements}
+              onElementPositionChange={handleElementPositionChange}
+              onElementVisibilityChange={handleElementVisibilityChange}
             />
           </div>
 
@@ -310,6 +343,7 @@ const App: React.FC = () => {
               background={background}
               onTemplateChange={handleTemplateChange}
               onTextChange={handleTextChange}
+              onElementVisibilityChange={handleElementVisibilityChange}
               onBackgroundChange={handleBackgroundChange}
               onReset={handleReset}
             />
@@ -339,6 +373,9 @@ const App: React.FC = () => {
                   html={currentHtml}
                   platform={platform}
                   isLoading={isLoading}
+                  editableElements={editableElements}
+                  onElementPositionChange={handleElementPositionChange}
+                  onElementVisibilityChange={handleElementVisibilityChange}
                   compact
               />
               <EditPanel
@@ -348,6 +385,7 @@ const App: React.FC = () => {
                 background={background}
                 onTemplateChange={handleTemplateChange}
                 onTextChange={handleTextChange}
+                onElementVisibilityChange={handleElementVisibilityChange}
                 onBackgroundChange={handleBackgroundChange}
                 onReset={handleReset}
                 onClose={() => setShowMobilePreview(false)}
