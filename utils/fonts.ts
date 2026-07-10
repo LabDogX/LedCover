@@ -1,8 +1,11 @@
+import { FONT_DATA_LOADERS } from './fontDataLoaders';
+
 export interface FontOption {
   id: string;
   label: string;
   cssFamily: string;
   source?: string;
+  embeddedSourceId?: keyof typeof FONT_DATA_LOADERS;
 }
 
 export const SYSTEM_FONT_OPTIONS: FontOption[] = [
@@ -40,61 +43,61 @@ export const PROJECT_FONT_OPTIONS: FontOption[] = [
     id: 'source-han-sans-cn-bold',
     label: '思源黑体 Bold',
     cssFamily: '"Source Han Sans CN Bold", "Noto Sans CJK SC", sans-serif',
-    source: '/assets/fonts/source-han-sans-cn-bold',
+    embeddedSourceId: 'source-han-sans-cn-bold',
   },
   {
     id: 'source-han-serif-cn',
     label: '思源宋体',
     cssFamily: '"Source Han Serif CN", "Noto Serif CJK SC", serif',
-    source: '/assets/fonts/source-han-serif-cn-regular',
+    embeddedSourceId: 'source-han-serif-cn-regular',
   },
   {
     id: 'youshe-titlehei',
     label: '优设标题黑',
     cssFamily: '"YouShe TitleHei", "PingFang SC", sans-serif',
-    source: '/assets/fonts/youshe-titlehei',
+    embeddedSourceId: 'youshe-titlehei',
   },
   {
     id: 'pangmen-title',
     label: '庞门正道标题体',
     cssFamily: '"PangMen Title", "PingFang SC", sans-serif',
-    source: '/assets/fonts/pangmen-title',
+    embeddedSourceId: 'pangmen-title',
   },
   {
     id: 'ruizi-zhenyan',
     label: '锐字真言体',
     cssFamily: '"RuiZi ZhenYan", "PingFang SC", sans-serif',
-    source: '/assets/fonts/ruizi-zhenyan',
+    embeddedSourceId: 'ruizi-zhenyan',
   },
   {
     id: 'pangmen-qingsong',
     label: '庞门正道轻松体',
     cssFamily: '"PangMen QingSong", "PingFang SC", sans-serif',
-    source: '/assets/fonts/pangmen-qingsong',
+    embeddedSourceId: 'pangmen-qingsong',
   },
   {
     id: 'azhu-paopao',
     label: '阿朱泡泡体',
     cssFamily: '"Azhu Paopao", "PingFang SC", sans-serif',
-    source: '/assets/fonts/azhu-paopao',
+    embeddedSourceId: 'azhu-paopao',
   },
   {
     id: 'kangkang',
     label: '素材集市康康体',
     cssFamily: '"Kangkang", "PingFang SC", sans-serif',
-    source: '/assets/fonts/kangkang',
+    embeddedSourceId: 'kangkang',
   },
   {
     id: 'muyao-softbrush',
     label: '沐瑶软笔手写体',
     cssFamily: '"Muyao Softbrush", "PingFang SC", sans-serif',
-    source: '/assets/fonts/muyao-softbrush',
+    embeddedSourceId: 'muyao-softbrush',
   },
   {
     id: 'ipix-chinese-pixel',
     label: 'IPix 中文像素',
     cssFamily: '"IPix Chinese Pixel", "PingFang SC", sans-serif',
-    source: '/assets/fonts/ipix-chinese-pixel',
+    embeddedSourceId: 'ipix-chinese-pixel',
   },
 ];
 
@@ -112,6 +115,17 @@ const getPrimaryFontFamily = (cssFamily: string): string => {
 
 const loadedFontIds = new Set<string>();
 
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binary = window.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes.buffer;
+};
+
 const resolveFontSource = (source: string): string => {
   if (/^(https?:|data:|blob:)/i.test(source)) {
     return source;
@@ -126,9 +140,22 @@ const resolveFontSource = (source: string): string => {
 };
 
 export async function loadFontOption(font: FontOption): Promise<void> {
-  if (typeof document === 'undefined' || !font.source || loadedFontIds.has(font.id)) return;
+  if (typeof document === 'undefined' || loadedFontIds.has(font.id)) return;
 
   const family = getPrimaryFontFamily(font.cssFamily);
+
+  if (font.embeddedSourceId) {
+    const loader = FONT_DATA_LOADERS[font.embeddedSourceId];
+    const base64 = await loader();
+    const face = new FontFace(family, base64ToArrayBuffer(base64));
+    await face.load();
+    document.fonts.add(face);
+    loadedFontIds.add(font.id);
+    return;
+  }
+
+  if (!font.source) return;
+
   const fontUrl = resolveFontSource(font.source);
   const response = await fetch(fontUrl, { cache: 'force-cache' });
 
