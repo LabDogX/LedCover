@@ -55,6 +55,8 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
         return 'Emoji';
       case 'footer':
         return '底部元素';
+      case 'decoration':
+        return '装饰元素';
       default:
         return '文字';
     }
@@ -194,18 +196,27 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
               </button>
             </div>
 
-            {/* 文字输入 */}
-            <input
-              type="text"
-              value={element.text}
-              onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily)}
-              placeholder={element.placeholder}
-              disabled={element.visible === false}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400"
-              style={{ fontFamily: element.fontFamily || undefined }}
-            />
+            {element.type === 'decoration' ? (
+              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
+                {element.text} 可在预览画布中拖动，或用右侧眼睛按钮隐藏。
+              </div>
+            ) : (
+              <>
+                {/* 文字输入 */}
+                <input
+                  type="text"
+                  value={element.text}
+                  onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily)}
+                  placeholder={element.placeholder}
+                  disabled={element.visible === false}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400"
+                  style={{ fontFamily: element.fontFamily || undefined }}
+                />
+              </>
+            )}
 
             {/* Emoji 快捷插入 */}
+            {element.type !== 'decoration' && (
             <div className="grid grid-cols-6 gap-1.5">
               {EMOJI_PRESETS.map((emoji) => (
                 <button
@@ -221,8 +232,9 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
                 </button>
               ))}
             </div>
+            )}
 
-            {element.type !== 'emoji' && (
+            {element.type !== 'emoji' && element.type !== 'decoration' && (
               <div className="flex items-center gap-2">
                 <label className="text-xs text-slate-500 shrink-0">字体:</label>
                 <select
@@ -246,6 +258,7 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
             )}
 
             {/* 颜色和对齐控制 */}
+            {element.type !== 'decoration' && (
             <div className="flex items-center gap-2 flex-wrap">
               {/* 颜色选择器 */}
               <div className="flex items-center gap-2 flex-1">
@@ -302,6 +315,7 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
                 </button>
               </div>
             </div>
+            )}
           </div>
         ))}
       </div>

@@ -306,8 +306,8 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="w-[95%] mx-auto py-8 md:py-12">
-        <div className="grid lg:grid-cols-12 gap-6 lg:h-[calc(100vh-160px)] min-h-[600px]">
+      <main className="w-[95%] mx-auto py-4 md:py-12">
+        <div className="grid lg:grid-cols-12 gap-4 lg:gap-6 lg:h-[calc(100vh-160px)] lg:min-h-[600px]">
 
           {/* Left: Input Section (2 cols) */}
           <div className="lg:col-span-3 h-full">
@@ -368,7 +368,7 @@ const App: React.FC = () => {
            </div>
 
            {/* Modal Content */}
-           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+           <div className="flex-1 overflow-y-auto p-3 space-y-3">
               <PreviewSection
                   html={currentHtml}
                   platform={platform}

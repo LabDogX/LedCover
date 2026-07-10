@@ -34,7 +34,7 @@ export interface GenerationConfig {
 // 编辑功能相关类型
 export interface EditableElement {
   id: string;
-  type: 'title' | 'subtitle' | 'tag' | 'emoji' | 'footer';
+  type: 'title' | 'subtitle' | 'tag' | 'emoji' | 'footer' | 'decoration';
   text: string;
   placeholder?: string;
   // 新增：字体颜色和文字对齐

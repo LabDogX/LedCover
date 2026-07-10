@@ -26,6 +26,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
   let tagIndex = 0;
   let emojiIndex = 0;
   let footerIndex = 0;
+  let decorationIndex = 0;
 
   const getCommonElementState = (element: HTMLElement) => {
     const color = element.style.color || undefined;
@@ -155,6 +156,22 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     footerIndex++;
   });
 
+  const decorationElements = rootElement.querySelectorAll('[data-editable-type="decoration"]');
+  decorationElements.forEach((decoration) => {
+    const element = decoration as HTMLElement;
+    const text = element.getAttribute('data-editable-label') || element.textContent?.trim() || '装饰元素';
+    const commonState = getCommonElementState(element);
+
+    editableElements.push({
+      id: element.getAttribute('data-editable-id') || `decoration-${decorationIndex}`,
+      type: 'decoration',
+      text,
+      placeholder: '装饰元素',
+      ...commonState,
+    });
+    decorationIndex++;
+  });
+
   // 分析背景
   const background = parseBackground(rootElement);
 
@@ -219,6 +236,7 @@ export function markEditableElements(html: string): string {
   let tagIndex = 0;
   let emojiIndex = 0;
   let footerIndex = 0;
+  let decorationIndex = 0;
 
   // 标记标题 (h1, h2, h3) - 只标记有文本内容的
   const headings = rootElement.querySelectorAll('h1, h2, h3');
@@ -267,6 +285,15 @@ export function markEditableElements(html: string): string {
       element.setAttribute('data-editable-id', `footer-${footerIndex}`);
     }
     footerIndex++;
+  });
+
+  const explicitDecorationElements = rootElement.querySelectorAll('[data-editable-type="decoration"]');
+  explicitDecorationElements.forEach((decoration) => {
+    const element = decoration as HTMLElement;
+    if (!element.getAttribute('data-editable-id')) {
+      element.setAttribute('data-editable-id', `decoration-${decorationIndex}`);
+    }
+    decorationIndex++;
   });
 
   const lastChild = rootElement.lastElementChild as HTMLElement | null;

@@ -92,7 +92,7 @@ function generateXhsBoldTitleTemplate(): string {
 
   <div style="position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:42px 58px;">
     <span data-editable-id="tag-0" style="font-size:28px;font-weight:900;letter-spacing:2px;color:#ffffff;background:#ef4444;padding:10px 20px;border:5px solid #0f172a;border-radius:999px;text-align:center;">HOT</span>
-    <div style="display:flex;gap:10px;">
+    <div data-editable-id="decoration-0" data-editable-type="decoration" data-editable-label="右上角圆点" style="display:flex;gap:10px;">
       <div style="width:18px;height:18px;background:#0f172a;border-radius:50%;"></div>
       <div style="width:18px;height:18px;background:#0f172a;border-radius:50%;"></div>
       <div style="width:18px;height:18px;background:#0f172a;border-radius:50%;"></div>
@@ -128,7 +128,7 @@ function generateXhsCleanSolidTemplate(): string {
   </div>
 
   <div style="position:relative;z-index:10;padding:0 64px 58px;">
-    <div style="height:14px;background:#0f172a;border-radius:999px;"></div>
+    <div data-editable-id="decoration-0" data-editable-type="decoration" data-editable-label="底部横线" style="height:14px;background:#0f172a;border-radius:999px;"></div>
   </div>
 </div>`;
 }
