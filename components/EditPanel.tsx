@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, RotateCcw } from 'lucide-react';
-import { EditableElement, BackgroundEdit, CoverTemplateId, Platform } from '../types';
+import { EditableElement, BackgroundEdit, CoverTemplateId, CustomTemplate, Platform } from '../types';
 import TemplateSection from './TemplateSection';
 import TextEditSection from './TextEditSection';
 import BackgroundEditSection from './BackgroundEditSection';
@@ -9,6 +9,8 @@ import ImageAdjustSection from './ImageAdjustSection';
 interface EditPanelProps {
   platform: Platform;
   selectedTemplateId: CoverTemplateId;
+  selectedCustomTemplateId: string | null;
+  customTemplates: CustomTemplate[];
   editableElements: EditableElement[];
   background: BackgroundEdit | null;
   onTemplateChange: (templateId: CoverTemplateId) => void;
@@ -17,8 +19,12 @@ interface EditPanelProps {
     newText: string,
     color?: string,
     align?: 'left' | 'center' | 'right',
-    fontFamily?: string
+    fontFamily?: string,
+    fontSize?: number
   ) => void;
+  onCustomTemplateApply: (template: CustomTemplate) => void;
+  onCustomTemplateSave: (name: string) => void;
+  onCustomTemplateDelete: (templateId: string) => void;
   onElementVisibilityChange: (elementId: string, visible: boolean) => void;
   onBackgroundChange: (background: BackgroundEdit) => void;
   onReset: () => void;
@@ -28,10 +34,15 @@ interface EditPanelProps {
 const EditPanel: React.FC<EditPanelProps> = ({
   platform,
   selectedTemplateId,
+  selectedCustomTemplateId,
+  customTemplates,
   editableElements,
   background,
   onTemplateChange,
   onTextChange,
+  onCustomTemplateApply,
+  onCustomTemplateSave,
+  onCustomTemplateDelete,
   onElementVisibilityChange,
   onBackgroundChange,
   onReset,
@@ -68,7 +79,12 @@ const EditPanel: React.FC<EditPanelProps> = ({
         <TemplateSection
           platform={platform}
           selectedTemplateId={selectedTemplateId}
+          selectedCustomTemplateId={selectedCustomTemplateId}
+          customTemplates={customTemplates}
           onTemplateChange={onTemplateChange}
+          onCustomTemplateApply={onCustomTemplateApply}
+          onCustomTemplateSave={onCustomTemplateSave}
+          onCustomTemplateDelete={onCustomTemplateDelete}
         />
 
         {/* 文字编辑 */}

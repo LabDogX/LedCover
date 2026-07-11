@@ -6,6 +6,7 @@ export interface TextModification {
   color?: string;
   align?: 'left' | 'center' | 'right';
   fontFamily?: string;
+  fontSize?: number;
 }
 
 export interface ElementModification {
@@ -59,6 +60,9 @@ export function modifyHtml(
           } else {
             htmlElement.style.removeProperty('font-family');
           }
+        }
+        if (mod.fontSize !== undefined && Number.isFinite(mod.fontSize) && mod.fontSize > 0) {
+          htmlElement.style.fontSize = `${Math.round(mod.fontSize)}px`;
         }
 
         // 然后修改文本内容

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Type, AlignLeft, AlignCenter, AlignRight, Upload, Eye, EyeOff } from 'lucide-react';
+import { Type, AlignLeft, AlignCenter, AlignRight, Upload, Eye, EyeOff, Minus, Plus } from 'lucide-react';
 import { EditableElement } from '../types';
 import { EMOJI_PRESETS } from '../utils/presets';
 import { FONT_OPTIONS, FontOption, loadFontOption } from '../utils/fonts';
@@ -11,7 +11,8 @@ interface TextEditSectionProps {
     newText: string,
     color?: string,
     align?: 'left' | 'center' | 'right',
-    fontFamily?: string
+    fontFamily?: string,
+    fontSize?: number
   ) => void;
   onVisibilityChange: (elementId: string, visible: boolean) => void;
 }
@@ -64,14 +65,14 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
 
   const handleColorChange = (elementId: string, newText: string, color: string) => {
     const element = elements.find(el => el.id === elementId);
-    onChange(elementId, newText, color, element?.align, element?.fontFamily);
+    onChange(elementId, newText, color, element?.align, element?.fontFamily, element?.fontSize);
   };
 
   const handleAlignChange = (elementId: string, align: 'left' | 'center' | 'right') => {
     const element = elements.find(el => el.id === elementId);
     // 只有当对齐方式真正改变时才触发更新
     if (element?.align !== align) {
-      onChange(elementId, element?.text || '', element?.color, align, element?.fontFamily);
+      onChange(elementId, element?.text || '', element?.color, align, element?.fontFamily, element?.fontSize);
     }
   };
 
@@ -88,12 +89,17 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
       }
     }
 
-    onChange(element.id, element.text, element.color, element.align, fontFamily);
+    onChange(element.id, element.text, element.color, element.align, fontFamily, element.fontSize);
   };
 
   const handleEmojiClick = (element: EditableElement, emoji: string) => {
     const nextText = element.type === 'emoji' ? emoji : `${element.text}${emoji}`;
-    onChange(element.id, nextText, element.color, element.align, element.fontFamily);
+    onChange(element.id, nextText, element.color, element.align, element.fontFamily, element.fontSize);
+  };
+
+  const handleFontSizeChange = (element: EditableElement, fontSize: number) => {
+    const nextSize = Math.min(300, Math.max(8, Math.round(fontSize)));
+    onChange(element.id, element.text, element.color, element.align, element.fontFamily, nextSize);
   };
 
   const getFontOptionsForElement = (element: EditableElement): FontOption[] => {
@@ -206,7 +212,7 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
                 <input
                   type="text"
                   value={element.text}
-                  onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily)}
+                  onChange={(e) => onChange(element.id, e.target.value, element.color, element.align, element.fontFamily, element.fontSize)}
                   placeholder={element.placeholder}
                   disabled={element.visible === false}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400"
@@ -254,6 +260,49 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {element.type !== 'decoration' && (
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-500 shrink-0">字号:</label>
+                <div className="flex items-center border border-slate-200 rounded-lg bg-white overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => handleFontSizeChange(element, (element.fontSize || 16) - 2)}
+                    disabled={element.visible === false || (element.fontSize || 16) <= 8}
+                    className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    title="减小字号"
+                    aria-label="减小字号"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <input
+                    type="number"
+                    min="8"
+                    max="300"
+                    step="1"
+                    value={Math.round(element.fontSize || 16)}
+                    onChange={(event) => {
+                      const nextSize = Number(event.target.value);
+                      if (Number.isFinite(nextSize)) handleFontSizeChange(element, nextSize);
+                    }}
+                    disabled={element.visible === false}
+                    className="w-14 h-8 border-x border-slate-200 text-center text-xs outline-none disabled:bg-slate-100"
+                    aria-label="字号"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleFontSizeChange(element, (element.fontSize || 16) + 2)}
+                    disabled={element.visible === false || (element.fontSize || 16) >= 300}
+                    className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    title="增大字号"
+                    aria-label="增大字号"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span className="text-xs text-slate-400">px</span>
               </div>
             )}
 

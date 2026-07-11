@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, AIProvider, AppSettings, EditableElement, BackgroundEdit, CoverTemplateId } from './types';
+import { Platform, AIProvider, AppSettings, EditableElement, BackgroundEdit, CoverTemplateId, CustomTemplate } from './types';
 import { generateCoverHtml } from './services/llmService';
 import { markEditableElements, parseHtmlForEditing } from './utils/htmlParser';
 import { modifyHtml } from './utils/htmlModifier';
@@ -11,6 +11,7 @@ import SettingsModal from './components/SettingsModal';
 import Logo from './components/Logo';
 import { Github, Settings as SettingsIcon, ChevronLeft, Sparkles } from 'lucide-react';
 import { applyProviderDefaults, getProviderDisplayName, getProviderOption } from './utils/aiProviders';
+import { createCustomTemplate, loadCustomTemplates, saveCustomTemplates } from './utils/customTemplates';
 
 const DEFAULT_SETTINGS: AppSettings = applyProviderDefaults({
   provider: AIProvider.DeepSeek,
@@ -40,6 +41,8 @@ const App: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<CoverTemplateId>(
     getDefaultTemplateId(Platform.WeChat)
   );
+  const [selectedCustomTemplateId, setSelectedCustomTemplateId] = useState<string | null>(null);
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   
   // Initialize topic directly from URL
   const [topic, setTopic] = useState<string>(() => {
@@ -53,6 +56,10 @@ const App: React.FC = () => {
     if (title && !topic) {
        setTopic(decodeURIComponent(title));
     }
+  }, []);
+
+  useEffect(() => {
+    setCustomTemplates(loadCustomTemplates());
   }, []);
 
   // 当前显示的 HTML（用于预览和编辑）
@@ -106,6 +113,7 @@ const App: React.FC = () => {
     if (!currentHtml) return;
     const nextTemplateId = getDefaultTemplateId(platform);
     setSelectedTemplateId(nextTemplateId);
+    setSelectedCustomTemplateId(null);
 
     const newTemplate = generateInitialTemplate(platform, nextTemplateId);
     const markedTemplate = markEditableElements(newTemplate);
@@ -119,6 +127,7 @@ const App: React.FC = () => {
   // 模板切换
   const handleTemplateChange = (templateId: CoverTemplateId) => {
     setSelectedTemplateId(templateId);
+    setSelectedCustomTemplateId(null);
 
     const newTemplate = generateInitialTemplate(platform, templateId);
     const markedTemplate = markEditableElements(newTemplate);
@@ -135,13 +144,14 @@ const App: React.FC = () => {
     newText: string,
     color?: string,
     align?: 'left' | 'center' | 'right',
-    fontFamily?: string
+    fontFamily?: string,
+    fontSize?: number
   ) => {
     if (!currentHtml) return;
 
     // 更新 HTML
     const newHtml = modifyHtml(currentHtml, {
-      text: [{ elementId, newText, color, align, fontFamily }],
+      text: [{ elementId, newText, color, align, fontFamily, fontSize }],
     });
     setCurrentHtml(newHtml);
 
@@ -149,10 +159,53 @@ const App: React.FC = () => {
     setEditableElements(prev =>
       prev.map(el =>
         el.id === elementId
-          ? { ...el, text: newText, color, align, fontFamily }
+          ? { ...el, text: newText, color, align, fontFamily, fontSize }
           : el
       )
     );
+  };
+
+  const applyTemplateHtml = (html: string) => {
+    const markedTemplate = markEditableElements(html);
+    setCurrentHtml(markedTemplate);
+
+    const parsed = parseHtmlForEditing(markedTemplate);
+    setEditableElements(parsed.editableElements);
+    setBackground(parsed.background || { type: 'solid', value: '#0f172a' });
+  };
+
+  const handleCustomTemplateSave = (name: string) => {
+    if (!currentHtml) return;
+
+    try {
+      const savedTemplate = createCustomTemplate(name, platform, currentHtml);
+      const nextTemplates = [savedTemplate, ...customTemplates];
+      saveCustomTemplates(nextTemplates);
+      setCustomTemplates(nextTemplates);
+      setSelectedCustomTemplateId(savedTemplate.id);
+    } catch (error) {
+      console.error('Failed to save custom template', error);
+      alert('自定义模板保存失败：浏览器存储空间不足或不可用。');
+    }
+  };
+
+  const handleCustomTemplateApply = (template: CustomTemplate) => {
+    applyTemplateHtml(template.html);
+    setSelectedCustomTemplateId(template.id);
+  };
+
+  const handleCustomTemplateDelete = (templateId: string) => {
+    const nextTemplates = customTemplates.filter(template => template.id !== templateId);
+    try {
+      saveCustomTemplates(nextTemplates);
+      setCustomTemplates(nextTemplates);
+      if (selectedCustomTemplateId === templateId) {
+        setSelectedCustomTemplateId(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete custom template', error);
+      alert('自定义模板删除失败，请检查浏览器存储设置。');
+    }
   };
 
   // 背景修改
@@ -187,6 +240,7 @@ const App: React.FC = () => {
     const parsed = parseHtmlForEditing(markedTemplate);
     setEditableElements(parsed.editableElements);
     setBackground(parsed.background || { type: 'solid', value: '#0f172a' });
+    setSelectedCustomTemplateId(null);
   };
 
   // 直接从编辑状态生成（不使用 AI）
@@ -211,6 +265,7 @@ const App: React.FC = () => {
       // Mark editable elements for later editing
       const markedHtml = markEditableElements(html);
       setCurrentHtml(markedHtml);
+      setSelectedCustomTemplateId(null);
 
       // Parse for editing
       const parsed = parseHtmlForEditing(markedHtml);
@@ -321,10 +376,15 @@ const App: React.FC = () => {
             <EditPanel
               platform={platform}
               selectedTemplateId={selectedTemplateId}
+              selectedCustomTemplateId={selectedCustomTemplateId}
+              customTemplates={customTemplates}
               editableElements={editableElements}
               background={background}
               onTemplateChange={handleTemplateChange}
               onTextChange={handleTextChange}
+              onCustomTemplateApply={handleCustomTemplateApply}
+              onCustomTemplateSave={handleCustomTemplateSave}
+              onCustomTemplateDelete={handleCustomTemplateDelete}
               onElementVisibilityChange={handleElementVisibilityChange}
               onBackgroundChange={handleBackgroundChange}
               onReset={handleReset}
@@ -360,10 +420,15 @@ const App: React.FC = () => {
               <EditPanel
                 platform={platform}
                 selectedTemplateId={selectedTemplateId}
+                selectedCustomTemplateId={selectedCustomTemplateId}
+                customTemplates={customTemplates}
                 editableElements={editableElements}
                 background={background}
                 onTemplateChange={handleTemplateChange}
                 onTextChange={handleTextChange}
+                onCustomTemplateApply={handleCustomTemplateApply}
+                onCustomTemplateSave={handleCustomTemplateSave}
+                onCustomTemplateDelete={handleCustomTemplateDelete}
                 onElementVisibilityChange={handleElementVisibilityChange}
                 onBackgroundChange={handleBackgroundChange}
                 onReset={handleReset}

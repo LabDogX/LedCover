@@ -41,6 +41,7 @@ export interface EditableElement {
   color?: string;
   align?: 'left' | 'center' | 'right';
   fontFamily?: string;
+  fontSize?: number;
   visible?: boolean;
   position?: { x: number; y: number };
 }
@@ -75,4 +76,13 @@ export interface CoverTemplate {
   platform: Platform;
   name: string;
   description: string;
+}
+
+export interface CustomTemplate {
+  id: string;
+  name: string;
+  platform: Platform;
+  html: string;
+  createdAt: number;
+  updatedAt: number;
 }

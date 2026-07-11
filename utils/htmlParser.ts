@@ -32,6 +32,8 @@ export function parseHtmlForEditing(html: string): ParsedResult {
     const color = element.style.color || undefined;
     const textAlign = element.style.textAlign;
     const fontFamily = element.style.fontFamily || undefined;
+    const parsedFontSize = parseFloat(element.style.fontSize);
+    const fontSize = Number.isFinite(parsedFontSize) ? parsedFontSize : undefined;
 
     let align: 'left' | 'center' | 'right' = 'center';
     if (textAlign === 'left' || textAlign === 'center' || textAlign === 'right') {
@@ -49,6 +51,7 @@ export function parseHtmlForEditing(html: string): ParsedResult {
       color,
       align,
       fontFamily,
+      fontSize,
       visible: element.getAttribute('data-hidden') !== 'true' && element.style.display !== 'none',
       position: hasStoredPosition
         ? { x, y }
