@@ -174,7 +174,7 @@ const TextEditSection: React.FC<TextEditSectionProps> = ({ elements, onChange, o
         </label>
       </div>
 
-      <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-2">
+      <div className="flex flex-col gap-3 max-h-none overflow-visible lg:max-h-[300px] lg:overflow-y-auto lg:pr-2">
         {elements.map((element) => (
           <div
             key={element.id}

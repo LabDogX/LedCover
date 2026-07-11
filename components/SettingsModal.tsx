@@ -42,11 +42,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-2rem)] overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200 flex flex-col">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="px-4 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <Settings className="w-5 h-5 text-slate-500" />
             系统设置
@@ -60,7 +60,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 md:p-6 space-y-6 overflow-y-auto">
           
           {/* Provider Selection */}
           <div className="space-y-3">
@@ -144,7 +144,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <div className="px-4 md:px-6 py-3 md:py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
           <button
             onClick={handleSave}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-white transition-all transform active:scale-95 ${

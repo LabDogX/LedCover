@@ -142,8 +142,8 @@ const PreviewSection: React.FC<PreviewSectionProps> = ({
       <div
         className="flex-grow bg-slate-100 rounded-xl md:rounded-2xl border border-slate-200 flex items-center justify-center p-2 md:p-8 overflow-hidden relative shadow-inner"
         style={{
-          maxHeight: compact ? '68vh' : 'calc(100vh - 280px)',
-          minHeight: compact ? '420px' : '400px',
+          maxHeight: compact ? 'none' : 'calc(100vh - 280px)',
+          minHeight: compact ? 0 : '400px',
         }}
       >
         {isLoading && (

@@ -49,7 +49,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
   onClose,
 }) => {
   return (
-    <div className="w-full lg:w-[96%] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 flex flex-col h-full">
+    <div className="w-full lg:w-[96%] bg-white rounded-xl lg:rounded-2xl shadow-sm lg:shadow-xl border border-slate-200 p-4 lg:p-5 flex flex-col h-auto lg:h-full">
       {/* 头部 */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
         <h3 className="text-lg font-bold text-slate-800">编辑封面</h3>
@@ -74,7 +74,7 @@ const EditPanel: React.FC<EditPanelProps> = ({
       </div>
 
       {/* 可滚动内容区 */}
-      <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+      <div className="flex-1 overflow-visible lg:overflow-y-auto lg:pr-2 space-y-6">
         {/* 模板选择 */}
         <TemplateSection
           platform={platform}

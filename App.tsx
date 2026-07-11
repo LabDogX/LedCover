@@ -346,7 +346,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="w-[95%] mx-auto py-4 md:py-12">
+      <main className="w-full max-w-7xl mx-auto px-3 pb-28 pt-4 md:w-[95%] md:max-w-none md:px-0 md:py-12">
         <div className="grid lg:grid-cols-12 gap-4 lg:gap-6 lg:h-[calc(100vh-160px)] lg:min-h-[600px]">
 
           {/* Left: Input Section (2 cols) */}
@@ -363,7 +363,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Center: Preview Section (5 cols) */}
-          <div className="lg:col-span-5 h-full">
+          <div className="hidden lg:block lg:col-span-5 h-full">
             <PreviewSection
               html={currentHtml}
               platform={platform}
@@ -409,14 +409,17 @@ const App: React.FC = () => {
               <div className="w-8"></div>
            </div>
 
-           {/* Modal Content */}
-           <div className="flex-1 overflow-y-auto p-3 space-y-3">
+           <div className="h-[min(44vh,400px)] min-h-[260px] shrink-0 px-3 pt-3 pb-2 bg-slate-50 border-b border-slate-200">
               <PreviewSection
                   html={currentHtml}
                   platform={platform}
                   isLoading={isLoading}
                   compact
               />
+           </div>
+
+           {/* Modal Content */}
+           <div className="flex-1 overflow-y-auto px-3 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               <EditPanel
                 platform={platform}
                 selectedTemplateId={selectedTemplateId}
@@ -439,13 +442,14 @@ const App: React.FC = () => {
       )}
 
       {/* Mobile Edit Button - Floating */}
-      <div className="lg:hidden fixed bottom-20 right-4 z-50">
+      <div className="lg:hidden fixed bottom-[104px] right-4 z-50">
         <button
           onClick={() => setShowMobilePreview(true)}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-full shadow-lg hover:bg-slate-800 transition-all"
+          className="w-12 h-12 bg-slate-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95"
+          title="编辑封面"
+          aria-label="编辑封面"
         >
           <Sparkles className="w-5 h-5" />
-          编辑封面
         </button>
       </div>
 

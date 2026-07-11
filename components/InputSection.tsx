@@ -37,22 +37,22 @@ const InputSection: React.FC<InputSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col gap-6 h-full border border-slate-100 relative">
+    <div className="bg-white rounded-xl md:rounded-2xl shadow-sm md:shadow-xl p-4 md:p-8 flex flex-col gap-4 md:gap-6 h-full border border-slate-100 relative">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-          <Wand2 className="w-6 h-6 text-purple-600" />
+        <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-1.5 md:mb-2 flex items-center gap-2">
+          <Wand2 className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
           内容设置
         </h2>
-        <p className="text-slate-500 text-sm">
+        <p className="text-slate-500 text-sm leading-relaxed">
           输入您的文章主题或粘贴内容摘要，AI 将为您生成匹配的封面。
         </p>
       </div>
 
       {/* Platform Toggle */}
-      <div className="grid grid-cols-2 gap-3 p-1 bg-slate-100 rounded-xl">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 p-1 bg-slate-100 rounded-xl">
         <button
           onClick={() => setPlatform(Platform.WeChat)}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+          className={`flex items-center justify-center gap-1.5 md:gap-2 py-2.5 md:py-3 px-2 md:px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
             platform === Platform.WeChat
               ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
               : 'text-slate-500 hover:text-slate-700'
@@ -63,7 +63,7 @@ const InputSection: React.FC<InputSectionProps> = ({
         </button>
         <button
           onClick={() => setPlatform(Platform.Xiaohongshu)}
-          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+          className={`flex items-center justify-center gap-1.5 md:gap-2 py-2.5 md:py-3 px-2 md:px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
             platform === Platform.Xiaohongshu
               ? 'bg-white text-rose-600 shadow-sm ring-1 ring-black/5'
               : 'text-slate-500 hover:text-slate-700'
@@ -91,8 +91,7 @@ const InputSection: React.FC<InputSectionProps> = ({
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="例如：适合程序员的5个远程办公技巧..."
-            // Increased min-height to 300px for better visibility on both mobile and desktop
-            className={`w-full flex-1 min-h-[300px] lg:min-h-0 p-4 rounded-xl border ${isLong ? 'border-orange-300 focus:ring-orange-200' : 'border-slate-200 focus:ring-purple-500'} bg-slate-50 focus:bg-white focus:ring-2 focus:border-transparent outline-none resize-none text-slate-700 transition-all text-base leading-relaxed`}
+            className={`w-full flex-1 min-h-[220px] sm:min-h-[280px] lg:min-h-0 p-3 md:p-4 rounded-xl border ${isLong ? 'border-orange-300 focus:ring-orange-200' : 'border-slate-200 focus:ring-purple-500'} bg-slate-50 focus:bg-white focus:ring-2 focus:border-transparent outline-none resize-none text-slate-700 transition-all text-base leading-relaxed`}
             />
         </div>
 
@@ -113,15 +112,15 @@ const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Mobile Spacer: Prevents content from being hidden behind the fixed button */}
-      <div className="h-24 md:hidden shrink-0"></div>
+      <div className="h-28 md:hidden shrink-0"></div>
 
       {/* Generate Button: Sticky Bottom on Mobile, Static on Desktop */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-white/80 backdrop-blur-xl border-t border-slate-200 z-50 md:static md:bg-transparent md:p-0 md:border-0 md:z-auto transition-all">
+      <div className="fixed bottom-0 left-0 right-0 p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-xl border-t border-slate-200 z-50 md:static md:bg-transparent md:p-0 md:border-0 md:z-auto transition-all">
         <div className="max-w-7xl mx-auto md:max-w-none w-full">
             <button
             onClick={handleGenerate}
             disabled={isLoading || !topic.trim()}
-            className={`w-full py-4 rounded-xl font-bold text-white text-lg shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] ${
+            className={`w-full py-3.5 md:py-4 rounded-xl font-bold text-white text-base md:text-lg shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] ${
                 isLoading || !topic.trim()
                 ? 'bg-slate-300 cursor-not-allowed'
                 : platform === Platform.WeChat
