@@ -9,7 +9,7 @@ import PreviewSection from './components/PreviewSection';
 import EditPanel from './components/EditPanel';
 import SettingsModal from './components/SettingsModal';
 import Logo from './components/Logo';
-import { Github, Settings as SettingsIcon, ChevronLeft, Sparkles } from 'lucide-react';
+import { Github, Settings as SettingsIcon, ChevronLeft, Sparkles, PenLine } from 'lucide-react';
 import { applyProviderDefaults, getProviderDisplayName, getProviderOption } from './utils/aiProviders';
 import { createCustomTemplate, loadCustomTemplates, saveCustomTemplates } from './utils/customTemplates';
 
@@ -445,11 +445,15 @@ const App: React.FC = () => {
       <div className="lg:hidden fixed bottom-[104px] right-4 z-50">
         <button
           onClick={() => setShowMobilePreview(true)}
-          className="w-12 h-12 bg-slate-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95"
+          className="flex items-center gap-2.5 rounded-full bg-indigo-600 text-white pl-3 pr-4 py-3 shadow-lg shadow-indigo-300/60 ring-4 ring-white hover:bg-indigo-700 transition-all active:scale-95"
           title="编辑封面"
           aria-label="编辑封面"
         >
-          <Sparkles className="w-5 h-5" />
+          <span className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center">
+            <PenLine className="w-4 h-4" />
+          </span>
+          <span className="text-sm font-bold">编辑封面</span>
+          <Sparkles className="w-4 h-4 text-indigo-100" />
         </button>
       </div>
 
